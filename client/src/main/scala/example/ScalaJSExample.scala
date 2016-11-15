@@ -18,9 +18,14 @@ object ScalaJSExample extends js.JSApp {
   var socket: dom.WebSocket = _
 
   def main(): Unit = {
-    val url = jQuery("#monitor_container").data("ws-url").toString
+    val url = if(dom.window.location.protocol == "https:") {
+      val ws = jQuery("#monitor_container").data("ws-url").toString
+      ws.splitAt(2)._1 + "s" + ws.splitAt(2)._2
+    } else {
+      jQuery("#monitor_container").data("ws-url").toString
+    }
+    println(url)
 
-    println("websocket url: " + url)
     socket = new dom.WebSocket(url)
     socket.onmessage = ScalaJSExample.receive _
 
