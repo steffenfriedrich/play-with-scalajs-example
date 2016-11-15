@@ -14,7 +14,7 @@ lazy val uTestV = "0.4.3"
 
 lazy val reactV = "15.1.0"
 lazy val jQueryV = "2.2.4"
-lazy val bootstrapV = "3.3.7"
+lazy val bootstrapV = "3.3.7-1"
 lazy val highcharsV = "4.0.4"
 
 lazy val fontawesomeV = "4.3.0-1"
