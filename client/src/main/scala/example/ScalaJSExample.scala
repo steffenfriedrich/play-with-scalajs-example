@@ -20,6 +20,7 @@ object ScalaJSExample extends js.JSApp {
   def main(): Unit = {
     val url = jQuery("#monitor_container").data("ws-url").toString
 
+    println("websocket url: " + url)
     socket = new dom.WebSocket(url)
     socket.onmessage = ScalaJSExample.receive _
 
