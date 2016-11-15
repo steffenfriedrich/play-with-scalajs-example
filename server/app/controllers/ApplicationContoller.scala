@@ -47,7 +47,7 @@ class ApplicationContoller @Inject()(system: ActorSystem, materializer: Material
     import system.dispatcher
 
     system.scheduler.schedule(0 seconds, 1 seconds) {
-      out ! Json.parse(getData)
+      out ! Json.parse(Pickle.intoString(SummaryMeasurements.randomMeasurements))
     }
 
     def receive = {
@@ -59,24 +59,5 @@ class ApplicationContoller @Inject()(system: ActorSystem, materializer: Material
   }
 
 
-  def getData: String = {
-    val r = scala.util.Random
-    val min = r.nextDouble() * 2
-    val mean = min +  (50 + r.nextDouble() * 200)
-    val max = 2000 + (r.nextDouble() * 1000)
-    val p9999 = max - (10 + r.nextDouble() * 20)
-    val p999 = p9999  - (100 + r.nextDouble() * 100)
-    val p99 = p999 - (500 + r.nextDouble() * 500)
-    val p95 = mean + (100 + r.nextDouble() * 250)
-    val p90 = mean + (50 + r.nextDouble() * 200)
 
-    val stdev = 6 * p90 + mean
-
-
-    Pickle.intoString(SummaryMeasurements("ID0001", 90000.0, 10000.0,
-      Seq(SummaryMeasurement("Read", 10000, mean, stdev, min, max, p90, p95, p99, p999, p9999),
-        SummaryMeasurement("Update", 10000, (min +  (35 + r.nextDouble() * 190)),  6.4 * p90 + mean, min, max, p90, p95, p99, p999, p9999),
-        SummaryMeasurement("All", 10000, (min +  (32 + r.nextDouble() * 195)), stdev, min, max, p90, p95, p99, p999, p9999)
-      )))
-  }
 }
