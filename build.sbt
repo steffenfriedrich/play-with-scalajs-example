@@ -13,6 +13,7 @@ lazy val diodeV = "1.0.0"
 lazy val uTestV = "0.4.3"
 
 lazy val reactV = "15.1.0"
+lazy val scalaTagsV = "0.6.1"
 lazy val jQueryV = "2.2.4"
 lazy val bootstrapV = "3.3.7-1"
 lazy val highcharsV = "4.0.4"
@@ -56,6 +57,7 @@ lazy val client = (project in file("client")).settings(
     "org.scala-js" %%% "scalajs-dom" % scalaDomV,
     "be.doeraene" %%% "scalajs-jquery" % scalajsjqueryV,
     "com.github.benhutchison" %%% "prickle" % prickleV,
+    "com.lihaoyi" %%% "scalatags" % scalaTagsV,
     "com.github.karasiq" %%% "scalajs-highcharts" % scalajsHighchartsV
   )
 ).enablePlugins(ScalaJSPlugin, ScalaJSWeb).

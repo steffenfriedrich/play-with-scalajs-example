@@ -2,10 +2,40 @@
 @import play.api.Play
 
 @main("NoSQLMark") {
-    <div class="container" data-ws-url="@routes.ApplicationContoller.websocket.webSocketURL()" id="monitor_container">
-            <!-- Example row of columns -->
-        <div class="row" id="charts">
 
+    <div>
+        <div id="nosqlmark-brand">
+            <a href="#" id="nosqlmark-img"><img src="@routes.Assets.versioned("images/logo_90x25.png")"></a>
+        </div>
+        <a class="btn btn-default" id="menu-toggle">
+            <div class="line"></div> <div class="line"></div> <div class="line"></div>
+        </a>
+    </div>
+
+    <div id="sidebar-wrapper">
+
+        <ul class="sidebar-nav">
+            <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
+            <li><a data-toggle="tab" href="#monitor">Monitor</a></li>
+        </ul>
+    </div>
+
+
+
+    <div id="page-content-wrapper">
+        <div class="tab-content">
+            <div id="home" class="tab-pane fade in active">
+                <h3>Home</h3>
+            </div>
+            <div id="monitor" class="tab-pane fade">
+                <h3>Monitor</h3>
+                <div class="container-fluid" data-ws-url="@routes.ApplicationContoller.websocket.webSocketURL()" id="monitor_container">
+                        <!-- Example row of columns -->
+                    <div class="row" id="charts" >
+
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 }

@@ -1,42 +1,54 @@
 package example
 
 import org.scalajs.dom
+import org.scalajs.dom.{KeyboardEvent, document, window}
 
 import scala.scalajs.js
+import scalatags.JsDom.all._
 import org.scalajs.jquery._
 import com.highcharts.HighchartsUtils._
 import com.highcharts.HighchartsAliases._
 import com.highcharts.config.{SeriesLine, _}
-
-import scala.scalajs.js.JSON
 import prickle._
 import shared.{SummaryMeasurement, SummaryMeasurements}
 
+import scala.scalajs.js.timers.SetTimeoutHandle
 
 object ScalaJSExample extends js.JSApp {
-  var wsBaseUrl: String = ""
   var socket: dom.WebSocket = _
+  var charts: Set[String] = Set()
 
   def main(): Unit = {
-    val url = if(dom.window.location.protocol == "https:") {
+    socket = new dom.WebSocket(wsUrl)
+    socket.onmessage = ScalaJSExample.receive _
+
+
+    jQuery("#menu-toggle").click({ (e: dom.MouseEvent) =>
+      e.preventDefault()
+      jQuery("#wrapper").toggleClass("toggled");
+      jQuery("#menu-toggle").toggleClass("toggled");
+      jQuery("#nosqlmark-brand").toggleClass("toggled");
+    })
+
+    // window resize
+    var res = -1
+    jQuery(window).resize(() => {
+      if (res != -1) {
+        window.clearTimeout(res)
+      }
+      res = window.setTimeout(()=> {
+        charts.foreach(c => resizeChart(c))
+      }, 500)
+    })
+    ready
+  }
+
+  lazy val wsUrl: String = if(dom.window.location.protocol == "https:") {
       val ws = jQuery("#monitor_container").data("ws-url").toString
       ws.splitAt(2)._1 + "s" + ws.splitAt(2)._2
     } else {
       jQuery("#monitor_container").data("ws-url").toString
     }
-    println(url)
-
-    socket = new dom.WebSocket(url)
-    socket.onmessage = ScalaJSExample.receive _
-
-
-    jQuery("#chart_read").highcharts(chartLatencyConfig("Read"))
-
-    ready
-  }
-
-  val jsonProperties = Seq("Read", "Insert", "Update", "Delete", "All")
-
 
   def receive(e: dom.MessageEvent) = {
     val data = Unpickle[SummaryMeasurements].fromString(e.data.toString)
@@ -46,15 +58,14 @@ object ScalaJSExample extends js.JSApp {
       val htmlId = "chart_" + measurement.operation.toLowerCase
 
       if (!(jQuery("#" + htmlId).length > 0)) {
-        val chart = dom.document.createElement("div")
-        chart.classList.add("col-md-6")
-        chart.id = htmlId
-
-        val node = jQuery("#charts").get(0)
-        node.appendChild(chart)
-
+        val chart = div(`class`:="col-xs-12 col-md-6 col-lg-4")(
+          div(id:=htmlId)()
+        )
+        jQuery("#charts").get(0).appendChild(chart.render)
         jQuery("#" + htmlId).highcharts(chartLatencyConfig(measurement.operation))
       }
+
+      charts = charts + (htmlId)
 
       val series = jQuery("#" + htmlId).highcharts().get.series
       series(5).addPoint(SeriesAreaData(x = now, y = measurement.mean), true, series(5).data.length > 100)
@@ -63,9 +74,9 @@ object ScalaJSExample extends js.JSApp {
       series(2).addPoint(SeriesAreaData(x = now, y = measurement.p99), true, series(2).data.length > 100)
       series(1).addPoint(SeriesAreaData(x = now, y = measurement.p999), true, series(1).data.length > 100)
       series(0).addPoint(SeriesAreaData(x = now, y = measurement.p9999), true, series(0).data.length > 100)
+
+      resizeChart(htmlId)
     })
-
-
   }
 
   def unwrapJson(json: js.Object) = {
@@ -73,13 +84,11 @@ object ScalaJSExample extends js.JSApp {
     println("Insert " + json.hasOwnProperty("Insert"))
   }
 
-
   def close() = socket.close()
 
   def ready = {
     dom.console.log("ready")
   }
-
 
   def chartLatencyConfig(operation: String) = new HighchartsConfig {
     override val chart: Cfg[Chart] = Chart(`type` = "area",
@@ -90,9 +99,9 @@ object ScalaJSExample extends js.JSApp {
           val x2 = 1
           val y2 = 1
         }
-        val stops = js.Array(js.Array(0, "#2a2a2b"), js.Array(1, "#3e3e40"))
+        val stops = js.Array(js.Array(0, "#2a2a2b"), js.Array(1, "#2a2a2b"))
       },
-      plotBorderColor = js.Object("#606063"),
+      plotBorderColor = js.Object("#000000"),
       style = js.Object {
         val fontFamily = "\'Unica One\', sans-serif"
       }
@@ -139,5 +148,11 @@ object ScalaJSExample extends js.JSApp {
       SeriesArea(name = "99.9%ile", legendIndex = 1, index = 1),
       SeriesArea(name = "99.99%ile", legendIndex = 0, index = 0)
     )
+  }
+
+  def resizeChart(htmlId: String): Unit = {
+    val width = jQuery("#" + htmlId).width()
+    val height = width / 1.2
+    jQuery("#" + htmlId).highcharts().get.setSize(width, height)
   }
 }
